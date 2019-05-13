@@ -12,7 +12,6 @@ Feature: test
     When "LME" publishes instrument "PB_03_2018"
 
     Then Then the application publishes the following instrument internally
-    Then A file is found on sink application with name "xxx"
       |  LAST_TRADING_DATE | DELIVERY_DATE  |  MARKET           | LABEL              | TRADABLE           |
       |  15-03-2018        | 17-03-2018     |  PB               | Lead 13 March 2018 |  TRUE              |
 
@@ -28,4 +27,5 @@ Feature: test
     When "LME" publishes instrument "PB_03_2018"
 
     Then Then the application publishes the following instrument internally
-    Then A file is found on sink application with name "xxx"
+      |  LAST_TRADING_DATE  | DELIVERY_DATE |  MARKET | LABEL              |  TRADABLE      |
+      |  15-03-2018         | 17-03-2018    |  PB     | Lead 13 March 2018 |  FALSE         |

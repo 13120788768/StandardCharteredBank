@@ -1,5 +1,7 @@
 package com.standard.chartered.bank.dispatcher;
 
+import java.util.List;
+
 /**
  * @Author: wayyer
  * @Description: the interface of instrument
@@ -8,7 +10,7 @@ package com.standard.chartered.bank.dispatcher;
  */
 public interface Instrument {
 
-    Object importData();
+    Object importData(Object list);
 
     Object publish();
 

@@ -1,7 +1,10 @@
 package com.standard.chartered.bank.utils;
 
+import com.standard.chartered.bank.constant.InstrumentType;
+import com.standard.chartered.bank.dispatcher.Instrument;
 import com.standard.chartered.bank.dispatcher.InstrumentContext;
 import com.standard.chartered.bank.dispatcher.LMEInstrument;
+import com.standard.chartered.bank.dispatcher.PRIMEInstrument;
 import com.standard.chartered.bank.handler.Wrapper;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
@@ -14,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author: wayyer
@@ -26,33 +30,41 @@ public class CommonSteps {
     private InstrumentContext context ;
     Wrapper wrapper;
 
-    @Given("^The \"([^\"]*)\" instrument \"([^\"]*)\" with details$")
-    public void provideDatawithIns(String instrumentType, String tableName, DataTable table) {
+    private ConcurrentHashMap<String, List<List<String>>> importDataMap = new ConcurrentHashMap<>();
 
-        if("LME".equalsIgnoreCase(instrumentType)){
-            wrapper = new Wrapper(new LMEInstrument(), "importData", instrumentType);
+
+    private Instrument instrument;
+
+    public static void main(String[] args) throws Exception {
+        Wrapper wrapper = new Wrapper(new LMEInstrument(), "importData", "LME");
+        wrapper.doImportService("LME", new ArrayList(){{add("1");}});
+    }
+
+    @Given("^The \"([^\"]*)\" instrument \"([^\"]*)\" with details$")
+    public void provideDatawithIns(String instrumentType, String tableName, List<List<String>> table) {
+        try{
+            generateInstruments(instrumentType);
+            wrapper = new Wrapper(instrument, "importData", instrumentType);
+            Object importServices = wrapper.doImportService(instrumentType, table);
+            importDataMap.putIfAbsent(instrumentType+"-"+tableName, (List<List<String>>)importServices);
+        } catch (Exception e){
+            e.getStackTrace();
         }
-        wrapper.doImportService(instrumentType, tableName, table.toString());
     }
 
     @When("^\"([^\"]*)\" publishes instrument \"([^\"]*)\"$")
     public void publishDatawithIns(String instrument, String tableName) {
 
+    }
+
+    @Then("^Then the application publishes the following instrument internally$")
+    public void loadAndCompare(List<List<String>> table) {
 
     }
 
     @Then("^A file is found on sink application with name \"([^\"]*)\"$")
     public void thenFileFoundOnSink(String fileName) {
 
-    }
-
-    @Then("^Then the application publishes the following instrument internally$")
-    public void loadAndCompare() {
-
-    }
-
-    @Then("^A file is found on sink application with topic \"([^\"]*)\" and name \"([^\"]*)\"$")
-    public void thenFileFoundOnSinkWithTopicName (String topic, String name) {
     }
 
     @And("^wait (\\d+) millisecond$")
@@ -69,12 +81,16 @@ public class CommonSteps {
 
     }
 
-    @And("^I will remove the test file on sink application \"([^\"]*)\"$")
+    @And("^I will remove the test file on \"([^\"]*)\"$")
     public void andRemoveFileOnSink(String fileName) {
     }
 
     @And("^log ([^\"]*)")
     public void andLogTime(String t) {
+
+    }
+
+    private void compareDatas(){
 
     }
 
@@ -186,5 +202,17 @@ public class CommonSteps {
         });
         Assert.assertEquals(1, length.size());
         return result;
+    }
+
+    private void generateInstruments(String instrumentType){
+        if(InstrumentType.INSTRUMENT_TYPE_LME.equalsIgnoreCase(instrumentType)){
+            instrument = new LMEInstrument();
+        }else if(InstrumentType.INSTRUMENT_TYPE_PRIME.equalsIgnoreCase(instrumentType)){
+            instrument = new PRIMEInstrument();
+        }else{
+            //extensible for others
+            return;
+        }
+
     }
 }

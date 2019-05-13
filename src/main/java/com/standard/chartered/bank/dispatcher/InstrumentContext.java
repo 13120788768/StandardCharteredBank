@@ -19,8 +19,8 @@ public class InstrumentContext {
     }
 
 
-    public Object importData(){
-        return instrument.importData();
+    public Object importData(Object... obj){
+        return instrument.importData(obj);
     }
 
 }

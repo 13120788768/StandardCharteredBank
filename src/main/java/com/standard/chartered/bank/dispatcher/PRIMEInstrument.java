@@ -1,5 +1,7 @@
 package com.standard.chartered.bank.dispatcher;
 
+import java.util.List;
+
 /**
  * @Author: wayyer
  * @Description: LME instrument
@@ -9,8 +11,8 @@ package com.standard.chartered.bank.dispatcher;
 public class PRIMEInstrument implements Instrument {
 
     @Override
-    public Object importData() {
-        System.out.println("PRIMEInstrument - importData");
+    public Object importData(Object list) {
+        System.out.println("PRIMEInstrument - importData" + list);
         return null;
     }
 

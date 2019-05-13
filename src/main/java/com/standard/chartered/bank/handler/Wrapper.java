@@ -4,8 +4,7 @@ import com.standard.chartered.bank.dispatcher.Instrument;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author: wayyer
@@ -14,65 +13,52 @@ import java.util.List;
  * @Date: 2019.05.13
  */
 public class Wrapper {
-    //这里也可以用map 对象来保存Hanlder对象
-    private List<Handler> handlerMapping = new ArrayList<Handler>();
+    //enable the security by concurrentHashMap
+    private ConcurrentHashMap<String, Handler> handlerMappingMap = new ConcurrentHashMap<>();
 
     public Wrapper(Instrument object, String method, String instrumentType) {
-        //简单实现映射
+        //register
         try {
             Class clazz = object.getClass();
             Handler handler = new Handler();
             handler.setInstrument(clazz.newInstance())
-                    .setMethod(clazz.getMethod(method/*, new Class[]{String.class}*/))
+                    .setMethod(clazz.getMethod(method, new Class[]{Object.class}))
                     .setType(instrumentType);
-            handlerMapping.add(handler);
+            handlerMappingMap.putIfAbsent(instrumentType, handler);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void  doPublishService(String type){
-        doDispatch(type);
+    public void doPublishService(String type) throws Exception{
+        doDispatch(type, null);
     }
 
-    public void  doImportService(String type, String... parameters){
-        doDispatch(type, parameters);
+    public Object doImportService(String type, Object... parameters) throws Exception{
+        return doDispatch(type, parameters[0]);
     }
 
-    private void doDispatch(String type, String... parameters) {
-        //1.获取用户请求的url
-        String uri =   type;
-        Handler handler =null;
+    private Object doDispatch(String type, Object parameters) throws Exception {
+        Handler handler = handlerMappingMap.get(type);
 
-        ////2、根据uri 去handlerMapping找到对应的hanler
-        for(Handler h :handlerMapping){
-            if(uri.equals(h.getType())){
-                handler = h;
-                break;
-            }
-        }
-        //3.将具体的任务分发给Method（通过反射去调用其对应的方法）
         Object obj = null;
         try {
-            obj =  handler.getMethod().invoke(handler.getInstrument(),parameters);
+            obj =  handler.getMethod().invoke(handler.getInstrument(), parameters);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-        //4、获取到Method执行的结果，通过Response返回出去
-        // response.getWriter().write();
+        return obj;
 
     }
+
     /**
-     * 具体的hanlder对象
+     * handler is used to store the dispatcher
      */
     class Handler{
-        //controller对象
         private Object instrument;
-        //controller对象映射的方法
         private  String type;
-        //ulr对应的方法
         private Method method;
 
         public Object getInstrument() {
