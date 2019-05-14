@@ -14,12 +14,12 @@ public class InstrumentContext {
         this.instrument = instrument;
     }
 
-    public Object publish(){
-        return instrument.publish();
+    public Object publish(Object list){
+        return instrument.publish(list);
     }
 
 
-    public Object importData(Object... obj){
+    public Object importData(Object obj){
         return instrument.importData(obj);
     }
 

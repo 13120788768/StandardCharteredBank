@@ -1,6 +1,15 @@
 package com.standard.chartered.bank.dispatcher;
 
+import com.standard.chartered.bank.constant.InstrumentType;
+import com.standard.chartered.bank.utils.FileUtils;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author: wayyer
@@ -18,8 +27,13 @@ public class LMEInstrument implements Instrument {
     }
 
     @Override
-    public Object publish() {
-        System.out.println("LMEInstrument - publish");
+    public Object publish(Object list) {
+        System.out.println("LMEInstrument - publish" + list);
+
+        FileUtils.writeOriginalToFile(list);
+
+        FileUtils.writePublishedToFile(list);
+
         return null;
     }
 }

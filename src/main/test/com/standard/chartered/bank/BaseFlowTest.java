@@ -1,4 +1,4 @@
-package com.standard.chartered.bank.test;
+package com.standard.chartered.bank;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         features = {"src/main/test/com/standard/chartered/bank/Scenario.feature"},
         tags = {"@test"},
-        glue = "com.standard.chartered.bank.utils",
+        glue = "com.standard.chartered.bank",
         plugin = {"pretty", "json:target/reports/report.json"})
 public class BaseFlowTest {
 

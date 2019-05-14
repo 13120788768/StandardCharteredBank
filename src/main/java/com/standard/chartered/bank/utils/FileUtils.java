@@ -1,100 +1,124 @@
 package com.standard.chartered.bank.utils;
 
 import com.standard.chartered.bank.constant.InstrumentType;
-import com.standard.chartered.bank.dispatcher.Instrument;
-import com.standard.chartered.bank.dispatcher.InstrumentContext;
-import com.standard.chartered.bank.dispatcher.LMEInstrument;
-import com.standard.chartered.bank.dispatcher.PRIMEInstrument;
-import com.standard.chartered.bank.handler.Wrapper;
-import cucumber.api.java.en.And;
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
-import io.cucumber.datatable.DataTable;
 import org.junit.Assert;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author: wayyer
- * @Description: test steps
- * @Program: HelloWorld
- * @Date: 2019.05.13
+ * @Description:
+ * @Program: test-enterence-project
+ * @Date: 2019.05.14
  */
-public class CommonSteps {
-
-    private InstrumentContext context ;
-    Wrapper wrapper;
-
-    private ConcurrentHashMap<String, List<List<String>>> importDataMap = new ConcurrentHashMap<>();
+public class FileUtils {
 
 
-    private Instrument instrument;
+    public static void writePublishedToFile(Object list){
+        String name = "";
+        List<List<String>> tableList = null;
+        if(list instanceof HashMap){
+            for (Object key: ((HashMap) list).keySet()) {
+                name = key.toString();
+                break;
+            }
+            for (Object value: ((HashMap) list).values()) {
+                tableList = (List<List<String>>)value;
+                break;
+            }
 
-    public static void main(String[] args) throws Exception {
-        Wrapper wrapper = new Wrapper(new LMEInstrument(), "importData", "LME");
-        wrapper.doImportService("LME", new ArrayList(){{add("1");}});
+        }
+        writePublish(name, tableList);
     }
 
-    @Given("^The \"([^\"]*)\" instrument \"([^\"]*)\" with details$")
-    public void provideDatawithIns(String instrumentType, String tableName, List<List<String>> table) {
+    public static void writeOriginalToFile(Object list){
+        String name = "";
+        List<List<String>> tableList = null;
+        if(list instanceof HashMap){
+            for (Object key: ((HashMap) list).keySet()) {
+                name = key.toString();
+                break;
+            }
+            for (Object value: ((HashMap) list).values()) {
+                tableList = (List<List<String>>)value;
+                break;
+            }
+
+        }
+        write(name, tableList);
+    }
+
+    private static void write(String name, List<List<String>> tableList){
+
+        String path = InstrumentType.OUTPUT_PATH+name+".tsv";
+        File file = new File(path);
+        BufferedWriter writer = null;
         try{
-            generateInstruments(instrumentType);
-            wrapper = new Wrapper(instrument, "importData", instrumentType);
-            Object importServices = wrapper.doImportService(instrumentType, table);
-            importDataMap.putIfAbsent(instrumentType+"-"+tableName, (List<List<String>>)importServices);
-        } catch (Exception e){
-            e.getStackTrace();
+            if (!file.isFile()) {
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+            for (List<String> line: tableList){
+                for (String l: line) {
+                    writer.write(l+"\t");
+                }
+                writer.write("\n");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(writer != null){
+                try{
+                    writer.close();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
         }
-    }
-
-    @When("^\"([^\"]*)\" publishes instrument \"([^\"]*)\"$")
-    public void publishDatawithIns(String instrument, String tableName) {
 
     }
 
-    @Then("^Then the application publishes the following instrument internally$")
-    public void loadAndCompare(List<List<String>> table) {
+    private static void writePublish(String name, List<List<String>> tableList){
 
-    }
+        String path = InstrumentType.OUTPUT_PATH+name+"_TRADABLE.tsv";
+        File file = new File(path);
+        BufferedWriter writer = null;
+        try{
+            if (!file.isFile()) {
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+            List<String> columnsList = tableList.get(0);
+            for (String l: columnsList) {
+                writer.write(l+"\t");
+            }
+            writer.write("TRADABLE\t\n");
 
-    @Then("^A file is found on sink application with name \"([^\"]*)\"$")
-    public void thenFileFoundOnSink(String fileName) {
+            for (int i = 1; i < tableList.size(); i++) {
+                for (String l: tableList.get(i)) {
+                    writer.write(l+"\t");
+                }
+                writer.write("TRUE\t");
+                writer.write("\n");
+            }
 
-    }
-
-    @And("^wait (\\d+) millisecond$")
-    public void waitMilliseconds(long n) {
-        try {
-            Thread.sleep(n);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(writer != null){
+                try{
+                    writer.close();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
         }
-    }
-
-    @And("^I wait Async Queue complete$")
-    public void waitAsync(String fullPath) {
 
     }
 
-    @And("^I will remove the test file on \"([^\"]*)\"$")
-    public void andRemoveFileOnSink(String fileName) {
-    }
 
-    @And("^log ([^\"]*)")
-    public void andLogTime(String t) {
-
-    }
-
-    private void compareDatas(){
-
-    }
-
-    private void checkFileData(List<List<String>> testDataList, File file) {
+    public static void checkFileData(List<List<String>> testDataList, File file) {
         if (testDataList.size() < 2 && (file == null || !file.isFile() || !file.exists())) {
             return;
         }
@@ -204,15 +228,4 @@ public class CommonSteps {
         return result;
     }
 
-    private void generateInstruments(String instrumentType){
-        if(InstrumentType.INSTRUMENT_TYPE_LME.equalsIgnoreCase(instrumentType)){
-            instrument = new LMEInstrument();
-        }else if(InstrumentType.INSTRUMENT_TYPE_PRIME.equalsIgnoreCase(instrumentType)){
-            instrument = new PRIMEInstrument();
-        }else{
-            //extensible for others
-            return;
-        }
-
-    }
 }

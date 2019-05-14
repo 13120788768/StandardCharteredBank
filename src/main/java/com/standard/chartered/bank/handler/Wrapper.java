@@ -4,7 +4,9 @@ import com.standard.chartered.bank.dispatcher.Instrument;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.FutureTask;
 
 /**
  * @Author: wayyer
@@ -30,20 +32,48 @@ public class Wrapper {
         }
     }
 
-    public void doPublishService(String type) throws Exception{
-        doDispatch(type, null);
+
+    /**
+     * do this file job async
+     * @param type
+     * @param parameters
+     */
+    public void saftyDoService(String type, Object... parameters){
+        Callable callable = new Callable() {
+            @Override
+            public Object call() throws Exception {
+                return doDispatch(type, parameters);
+            }
+        };
+        FutureTask newTask = new FutureTask(callable);
+        new Thread(newTask).start();
+    }
+
+    /**
+     *
+     * @param type
+     * @param parameters
+     * @throws Exception
+     */
+    public void doPublishService(String type, Object... parameters) throws Exception{
+        saftyDoService(type, parameters);
     }
 
     public Object doImportService(String type, Object... parameters) throws Exception{
-        return doDispatch(type, parameters[0]);
+        return doDispatch(type, parameters);
     }
 
-    private Object doDispatch(String type, Object parameters) throws Exception {
+    private Object doDispatch(String type, Object... parameters) throws Exception {
         Handler handler = handlerMappingMap.get(type);
 
         Object obj = null;
         try {
-            obj =  handler.getMethod().invoke(handler.getInstrument(), parameters);
+            if(parameters.length == 1){
+                obj =  handler.getMethod().invoke(handler.getInstrument(), parameters[0]);
+            }else {
+                obj =  handler.getMethod().invoke(handler.getInstrument(), parameters);
+            }
+
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

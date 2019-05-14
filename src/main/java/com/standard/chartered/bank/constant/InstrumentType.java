@@ -11,4 +11,6 @@ public class InstrumentType {
     public static final String INSTRUMENT_TYPE_LME = "LME";
     public static final String INSTRUMENT_TYPE_PRIME = "PRIME";
 
+    public static final String OUTPUT_PATH = "./src/lib/";
+
 }

@@ -12,7 +12,7 @@ public interface Instrument {
 
     Object importData(Object list);
 
-    Object publish();
+    Object publish(Object list);
 
 
 
