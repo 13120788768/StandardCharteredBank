@@ -10,5 +10,6 @@ main class
 com.standard.chartered.bank.CucumberSteps
 
 3.FutureTask to be used as async a task
+com.standard.chartered.bank.handler.Wrapper.saftyDoService
 
 4.use cucumber test as the test tool
